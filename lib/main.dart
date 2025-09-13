@@ -4,10 +4,13 @@ import 'package:test_flutter/di.dart';
 
 import 'app.dart';
 
-void main() {
+void main() async {
+  final appContainer = await container();
+  
   runApp(
     ChangeNotifierProvider(
-      create: (context) => viewModels().businessViewModel,
-      child: const TestApp()),
-    );
+      create: (context) => appContainer.viewModels.businessViewModel,
+      child: const TestApp(),
+    ),
+  );
 }
