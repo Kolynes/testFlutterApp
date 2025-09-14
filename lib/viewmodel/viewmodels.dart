@@ -19,7 +19,9 @@ class BusinessViewModel extends ChangeNotifier {
   late final Command fetchBusinessesCommand;
 
   Future<void> _fetchBusinesses() async {
-    businesses = await repository.fetchBusinesses();
-    notifyListeners();
+    await for (final state in repository.fetchBusinesses()) {
+      businesses = state;
+      notifyListeners();
+    }
   }
 }

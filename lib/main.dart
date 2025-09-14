@@ -6,7 +6,7 @@ import 'app.dart';
 
 void main() async {
   final appContainer = await container();
-  
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => appContainer.viewModels.businessViewModel,

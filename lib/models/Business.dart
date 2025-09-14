@@ -16,4 +16,12 @@ class BusinessDTO {
       contactNumber: json['contct_no'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'biz_name': name,
+      'bss_location': businessLocation,
+      'contct_no': contactNumber,
+    };
+  }
 }

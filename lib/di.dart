@@ -8,6 +8,12 @@ import 'package:test_flutter/repositories/repositories.dart';
 import 'package:test_flutter/services/services.dart';
 import 'package:test_flutter/viewmodel/viewmodels.dart';
 
+class Interceptors {
+  final RetryInterceptor retryInterceptor;
+
+  Interceptors({required this.retryInterceptor});
+}
+
 class Services {
   final BusinessService businessService;
 
@@ -27,28 +33,42 @@ class ViewModels {
 }
 
 class Container {
+  final Dio dio;
   final Services services;
   final Repositories repositories;
   final ViewModels viewModels;
-  final BoxCollection collection;
+  final Interceptors interceptors;
 
   Container({
-    required this.collection,
+    required this.dio,
     required this.services,
     required this.repositories,
     required this.viewModels,
+    required this.interceptors,
   });
 }
 
-Services services(ClientConfig config) {
+Dio dio(ClientConfig config) {
   final dio = Dio(baseOptions(config));
-  final businessService = BusinessService(dio);
 
+  return dio;
+}
+
+Interceptors interceptors(Dio dio) {
+  final retryInterceptor = RetryInterceptor(dio: dio);
+
+  dio.interceptors.add(retryInterceptor);
+
+  return Interceptors(retryInterceptor: retryInterceptor);
+}
+
+Services services(Dio dio) {
+  final businessService = BusinessService(dio);
   return Services(businessService: businessService);
 }
 
-Repositories repositories(Services services) {
-  final businessRepository = BusinessRepository(services.businessService);
+Repositories repositories(Services services, BoxCollection collection) {
+  final businessRepository = BusinessRepository(services.businessService, collection);
   return Repositories(businessRepository: businessRepository);
 }
 
@@ -60,13 +80,16 @@ ViewModels viewModels(Repositories repositories) {
 Future<Container> container() async {
   await dotenv.load(fileName: ".env");
   final config = Config.instance(dotenv.env);
+  final dioInstance = dio(config.client);
   final collection = await appCollection(config.collection);
-  final servicesObject = services(config.client);
-  final repositoriesObject = repositories(servicesObject);
+  final interceptorsObject = interceptors(dioInstance);
+  final servicesObject = services(dioInstance);
+  final repositoriesObject = repositories(servicesObject, collection);
   final viewModelsObject = viewModels(repositoriesObject);
 
   return Container(
-    collection: collection,
+    dio: dioInstance,
+    interceptors: interceptorsObject,
     services: servicesObject,
     repositories: repositoriesObject,
     viewModels: viewModelsObject,
