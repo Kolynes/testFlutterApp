@@ -55,8 +55,10 @@ Dio dio(ClientConfig config) {
 }
 
 Interceptors interceptors(Dio dio) {
-  final retryInterceptor = RetryInterceptor(dio: dio);
-
+  final retryInterceptor = RetryInterceptor(
+    dio: dio,
+    retryDelay: (retryCount) => Duration(seconds: 1 * retryCount),
+  );
   dio.interceptors.add(retryInterceptor);
 
   return Interceptors(retryInterceptor: retryInterceptor);

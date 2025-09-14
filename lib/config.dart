@@ -2,7 +2,7 @@ class ClientConfig{
   final String apiBaseUrl;
 
   ClientConfig(Map<String, dynamic> env)
-      : apiBaseUrl = env['CLIENT_API_BASE_URL'] ?? 'https://jsonplaceholder.typicode.com';
+      : apiBaseUrl = env['CLIENT_API_BASE_URL'] ?? 'http://localhost:8080';
 }
 
 class CollectionConfig {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:hive/hive.dart';
 import 'package:test_flutter/models/Business.dart';
 import 'package:test_flutter/services/services.dart';
@@ -19,18 +21,30 @@ class BusinessRepository {
   }
 
   Future<List<BusinessDTO>> getSavedBusinesses() async {
+    log('Getting saved businesses from Hive');
     final box = await collection.openBox('businessBox');
-    final savedBusinesses = box.get('businesses') as List<dynamic>? ?? [];
-    return savedBusinesses.map((json) => BusinessDTO.fromJson(json)).toList();
+    log('Opened Hive box: businessBox');
+    final savedBusinesses = (await box.get('businesses')) as List<dynamic>? ?? [];
+    log('Retrieved ${savedBusinesses.length} businesses from Hive');
+    return List<BusinessDTO>.from(
+      savedBusinesses.map((item) => BusinessDTO.fromJson(item)),
+    );
   }
 
   Stream<List<BusinessDTO>> fetchBusinesses() async* {
     yield await getSavedBusinesses();
     try {
       final response = await _businessService.fetchBusinesses();
-      yield response.map((json) => BusinessDTO.fromJson(json)).toList();
-      await saveBusinesses(response.map((json) => BusinessDTO.fromJson(json)).toList());
-    } catch (e) {
+      log(response.runtimeType.toString());
+      final list = List<BusinessDTO>.from(
+        (response as List).map((item) => BusinessDTO.fromJson(item)),
+      );
+      log('Fetched businesses from API: $list');
+      yield list;
+      await saveBusinesses(list);
+    } catch (e, stackTrace) {
+      log('Error fetching businesses stream: $e');
+      log(stackTrace.toString());
       throw Exception('Failed to load businesses');
     }
   }

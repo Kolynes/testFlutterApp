@@ -9,7 +9,7 @@ class BusinessDTO {
     required this.contactNumber,
   });
 
-  factory BusinessDTO.fromJson(Map<String, dynamic> json) {
+  factory BusinessDTO.fromJson(Map<dynamic, dynamic> json) {
     return BusinessDTO(
       name: json['biz_name'],
       businessLocation: json['bss_location'],
